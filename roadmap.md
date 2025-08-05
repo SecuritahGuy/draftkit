@@ -8,18 +8,18 @@ Why: Use 2024/2023/2022 to project a single-season 2025 number that matches snak
 	•	Top QBs no longer have negative VORP; replacement baselines make sense by position. ✅
 	•	Console prints per-position replacement line + top-12 preview. ✅
 
-2) Bye weeks (export bye) - COMPLETED ✅
+✅ 2) Bye weeks (export bye) - COMPLETED
 
 Why: Your roster has one FLEX and 6 bench; bye clustering matters.
 	•	Output: Add bye to each player. ✅
 	•	Accept: Spot-check a few teams; no missing byes for active players. ✅
 
-3) DST scoring with Yahoo brackets (league exact)
+✅ 3) DST scoring with Yahoo brackets (league exact) - COMPLETED
 
 Why: DEF matters in your lineup and Yahoo uses points-allowed bands + event scoring.
-	•	Scope: Implement team-defense scoring from nflverse weekly (sacks, INT, FR, TD, PA).
-	•	Output: Add pos="DEF", name=<TEAM>, points, vorp, tier.
-	•	Accept: Top 12 DEF look reasonable; points-allowed bands match your rules.
+	•	Scope: Implement team-defense scoring from nflverse weekly (sacks, INT, FR, TD, PA). ✅
+	•	Output: Add pos="DST", name=<TEAM>, points, vorp, tier. ✅
+	•	Accept: Top 12 DST look reasonable; points-allowed bands match your rules. ✅
 
 4) Kicker scoring (practical baseline, upgrade when data allows)
 

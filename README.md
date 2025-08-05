@@ -1,6 +1,9 @@
-# draftkid (nflverse-first)
-
-A minimal, open-source pipeline that builds a `players.json` for a fantasy draft board
+# draftkid (nflverse-first## What's included
+- **Connectors:** `nflverse.py` loads weekly stats & rosters via nfl_data_py; `dst.py` loads team defense stats.
+- **Scoring:** `scoring.py` computes fantasy points from a league config (YAML) for offense and DST.
+- **VORP & Tiers:** basic replacement-level and tiering (k-means) per position.
+- **Bye weeks:** Integration with schedule data for 2025 draft planning.
+- **DST Support:** Team defense scoring with sacks, interceptions, points allowed tiers, and special teams TDs. minimal, open-source pipeline that builds a `players.json` for a fantasy draft board
 using **nflverse / nfl_data_py** only (no paid feeds). Designed to power a simple Snake/Auction frontend.
 
 ## Quick start
@@ -31,6 +34,6 @@ python -m draftkit --year 2025 --config config/league-settings.example.yml \
 - **CLI:** `python -m draftkit --year 2025 --config config/league-settings.example.yml`
 
 ## Roadmap
-- Add K/DST scoring modules.
+- Add Kicker scoring modules.
 - Optional ADP enrichment (Sleeper/FFC) behind flags.
-- Export bye weeks and schedule strength (nflverse schedules).
+- Rookie & role-change overrides for accurate 2025 valuations.

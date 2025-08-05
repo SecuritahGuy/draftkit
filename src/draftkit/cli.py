@@ -6,7 +6,11 @@ from rich import print
 
 from .connectors.nflverse import load_weekly, load_rosters
 from .connectors.schedule import load_bye_weeks, get_2025_bye_weeks
-from .transforms.scoring import ScoringConfig, apply_scoring, apply_blended_scoring
+from .connectors.dst import load_dst_weekly, load_dst_rosters
+from .connectors.kicker import load_kicker_weekly, load_kicker_rosters
+from .transforms.scoring import (ScoringConfig, apply_scoring, apply_blended_scoring, 
+                                 apply_dst_scoring, apply_dst_blended_scoring,
+                                 apply_kicker_scoring, apply_kicker_blended_scoring)
 from .transforms.tiers import compute_replacement_and_vorp, add_tiers_kmeans
 
 app = typer.Typer(help="DraftKit builder (nfl_data_py-first)")
@@ -118,6 +122,24 @@ def build(year: int = typer.Option(..., "--year", "-y"),
     print(f"[bold]Loading rosters for {data_years}...[/]")
     rosters = load_rosters(data_years)
 
+    # Load DST data
+    print(f"[bold]Loading DST weekly for {data_years}...[/]")
+    dst_weekly = load_dst_weekly(data_years)
+    print(f"DST weekly rows: {len(dst_weekly)}")
+
+    print(f"[bold]Loading DST rosters for {data_years}...[/]")
+    dst_rosters = load_dst_rosters(data_years)
+    print(f"DST roster rows: {len(dst_rosters)}")
+
+    # Load kicker data
+    print(f"[bold]Loading kicker weekly for {data_years}...[/]")
+    kicker_weekly = load_kicker_weekly(data_years)
+    print(f"Kicker weekly rows: {len(kicker_weekly)}")
+
+    print(f"[bold]Loading kicker rosters for {year}...[/]")
+    kicker_rosters = load_kicker_rosters(year)
+    print(f"Kicker roster rows: {len(kicker_rosters)}")
+
     # Load bye weeks
     print(f"[bold]Loading bye weeks for {year}...[/]")
     if year == 2025:
@@ -129,26 +151,42 @@ def build(year: int = typer.Option(..., "--year", "-y"),
     # 2) Load scoring config
     cfg = ScoringConfig.from_yaml(config)
 
-    # 3) Score players (offense only, v0)
-    print("[bold]Scoring players...[/]")
+    # 3) Score players (offense + DST)
+    print("[bold]Scoring offensive players...[/]")
     if year == 2025 and per_game:
         players = apply_blended_scoring(weekly, rosters, cfg, data_years, blend_weights, min_games, bye_weeks)
     else:
         players = apply_scoring(weekly, rosters, cfg, bye_weeks)
 
+    print("[bold]Scoring DST units...[/]")
+    if year == 2025 and per_game:
+        dst_players = apply_dst_blended_scoring(dst_weekly, dst_rosters, cfg, data_years, blend_weights, min_games, bye_weeks)
+    else:
+        dst_players = apply_dst_scoring(dst_weekly, dst_rosters, cfg, bye_weeks)
+
+    print("[bold]Scoring kickers...[/]")
+    if year == 2025 and per_game:
+        kicker_players = apply_kicker_blended_scoring(kicker_weekly, kicker_rosters, cfg, data_years, blend_weights, min_games, bye_weeks)
+    else:
+        kicker_players = apply_kicker_scoring(kicker_weekly, kicker_rosters, cfg, bye_weeks)
+
+    # Combine offensive players, DST, and kickers
+    all_players = players + dst_players + kicker_players
+    print(f"Total players (offense + DST + K): {len(all_players)}")
+
     # 4) Replacement + VORP + tiers
     print("[bold]Computing replacement, VORP, tiers...[/]")
-    players = compute_replacement_and_vorp(players, cfg)
-    players = add_tiers_kmeans(players)
+    all_players = compute_replacement_and_vorp(all_players, cfg)
+    all_players = add_tiers_kmeans(all_players)
 
     # 5) Print diagnostics
     if year == 2025 and per_game:
-        print_diagnostics(players, cfg)
+        print_diagnostics(all_players, cfg)
 
     # 6) Export
     outpath = outdir / "players.json"
     with outpath.open("w") as f:
-        json.dump(players, f, indent=2)
+        json.dump(all_players, f, indent=2)
     print(f"[green]Wrote {outpath}[/]")
 
 if __name__ == "__main__":
