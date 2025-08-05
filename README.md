@@ -8,7 +8,8 @@ using **nflverse / nfl_data_py** only (no paid feeds). Designed to power a simpl
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-
+pip install -e . # for development mode
+```
 # Build for 2025 draft prep using blended historical projections
 python -m draftkit --year 2025 --config config/league-settings.example.yml
 
