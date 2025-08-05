@@ -24,3 +24,14 @@ packages = ["draftkit"]              # this must match src/draftkit
 
 [project.scripts]
 draftkit = "draftkit.cli:app"        # optional: enables `draftkit ...` shell cmd
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = [
+    "--cov=src/draftkit",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-fail-under=75"
+]

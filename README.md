@@ -9,13 +9,17 @@ using **nflverse / nfl_data_py** only (no paid feeds). Designed to power a simpl
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# Build for 2025 draft prep using historical data (2024, 2023, 2022)
+# Build for 2025 draft prep using blended historical projections
 python -m draftkit --year 2025 --config config/league-settings.example.yml
+
+# Advanced: Custom blending parameters
+python -m draftkit --year 2025 --config config/league-settings.example.yml \
+  --lookback 3 --blend 0.6,0.3,0.1 --per-game --min-games 8
 
 # Output
 # - public/players.json (points, VORP, tiers by position)
 ```
-> **Note:** When using `--year 2025`, the tool automatically pulls historical data from 2024, 2023, and 2022 seasons to help prepare for your 2025 fantasy draft. For other years, it uses data from that specific season.
+> **2025 Projections:** Uses blended per-game averages from recent seasons (default: 60% 2024, 30% 2023, 10% 2022) projected to 17 games. This fixes QB VORP issues and provides more stable rankings than single-season data.
 
 > **Network required:** `nfl_data_py` fetches data from the internet on first run; you need network access when building.
 
