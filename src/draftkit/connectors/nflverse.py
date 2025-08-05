@@ -1,6 +1,6 @@
 from __future__ import annotations
 import pandas as pd
-from nfl_data_py import importers as nfl
+import nfl_data_py as nfl
 
 def load_weekly(years: list[int]) -> pd.DataFrame:
     # nfl.import_weekly_data returns weekly player stats across seasons
@@ -20,7 +20,7 @@ def load_weekly(years: list[int]) -> pd.DataFrame:
     return df[needed].copy()
 
 def load_rosters(years: list[int]) -> pd.DataFrame:
-    rosters = nfl.import_rosters(years)
+    rosters = nfl.import_seasonal_rosters(years)
     keep = ['player_id','player_name','position','team','status']
     for col in keep:
         if col not in rosters.columns:

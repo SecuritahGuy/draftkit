@@ -17,13 +17,23 @@ def build(year: int = typer.Option(..., "--year", "-y"),
     """Build players.json for the given season/year."""
     outdir.mkdir(parents=True, exist_ok=True)
 
+    # Determine which years to pull data from
+    if year == 2025:
+        # For 2025 draft prep, use recent historical data
+        data_years = [2024, 2023, 2022]
+        print(f"[bold]Preparing for {year} draft using historical data from {data_years}[/]")
+    else:
+        # For other years, use the requested year
+        data_years = [year]
+        print(f"[bold]Loading data for {year}[/]")
+
     # 1) Load data
-    print(f"[bold]Loading nflverse weekly for {year}...[/]")
-    weekly = load_weekly([year])
+    print(f"[bold]Loading nflverse weekly for {data_years}...[/]")
+    weekly = load_weekly(data_years)
     print(f"Weekly rows: {len(weekly)}")
 
-    print(f"[bold]Loading rosters for {year}...[/]")
-    rosters = load_rosters([year])
+    print(f"[bold]Loading rosters for {data_years}...[/]")
+    rosters = load_rosters(data_years)
 
     # 2) Load scoring config
     cfg = ScoringConfig.from_yaml(config)
