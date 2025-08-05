@@ -1,6 +1,3 @@
-Absolutely—here’s a checklist-style roadmap you can work through and check off. It’s split into Backend (draftkid) and Frontend (draftkid-ui), with concrete tasks, commands, file stubs, and “definition of done” for each item.
-
-⸻
 
 ✅ Backend Roadmap — draftkid (nfl_data_py–first)
 

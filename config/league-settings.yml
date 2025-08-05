@@ -1,0 +1,90 @@
+# League Settings for DraftKit
+# Production configuration based on Yahoo 12-team PPR snake league
+# Supports: Offense, DST, Kicker scoring with blended historical projections
+#
+# Usage:
+#   python -m draftkit --year 2025 --config config/league-settings.yml --cache data_cache
+#
+# Features included:
+#   ✅ PPR scoring (1 point per reception)
+#   ✅ Distance-based kicker scoring (3/4/5 pts for FGs by distance)
+#   ✅ Yahoo-style DST scoring with points-allowed tiers
+#   ✅ Blended 3-year projections (2024/2023/2022 = 60%/30%/10%)
+#   ✅ Snake draft round estimates for 12-team league
+#   ✅ Bye week integration
+#   ✅ Fast parquet caching for rebuilds
+
+# Number of teams in the league
+teams: 12
+
+# Roster positions and starting requirements
+roster:
+  QB: 1      # 1 starting QB
+  RB: 2      # 2 starting RBs  
+  WR: 2      # 2 starting WRs
+  TE: 1      # 1 starting TE
+  FLEX: 1    # 1 FLEX (RB/WR/TE)
+  K: 1       # 1 starting Kicker
+  DEF: 1     # 1 starting Defense/Special Teams
+
+# Bench and IR slots (for UI and replacement math context)
+bench: 6
+ir: 2
+
+# Which positions are eligible for FLEX
+flex_positions: ["RB", "WR", "TE"]
+
+# Scoring system
+scoring:
+  # Passing (for QBs)
+  passYdsPerPt: 25        # 1 point per 25 passing yards
+  passTd: 4               # 4 points per passing TD
+  int: -2                 # -2 points per interception thrown
+  pickSixThrown: -2       # Additional penalty for pick-6 (rare in data)
+  sackTaken: -1           # Penalty for sacks taken (rare in data)
+  
+  # Rushing (for all positions)
+  rushYdsPerPt: 10        # 1 point per 10 rushing yards
+  rushTd: 6               # 6 points per rushing TD
+  
+  # Receiving (for all positions)
+  rec: 1                  # 1 point per reception (PPR)
+  recYdsPerPt: 10         # 1 point per 10 receiving yards
+  recTd: 6                # 6 points per receiving TD
+
+  # Return & fumble return TDs (player)
+  returnTd: 6            # Kick/Punt return TDs credited to the player
+  offFumTd: 6           # Offensive fumble return TDs
+  
+  # Miscellaneous
+  twoPt: 2                # 2 points per 2-point conversion
+  fumLost: -2             # -2 points per fumble lost
+  
+  # DST/Defense Scoring (Yahoo-style tiered system)
+  dstSack: 1              # 1 point per sack
+  dstInt: 2               # 2 points per interception
+  dstFumbleRecovery: 2    # 2 points per fumble recovery
+  dstDefensiveTd: 6       # 6 points per defensive/special teams TD
+  dstSafety: 2            # 2 points per safety
+  dstBlockedKick: 2       # 2 points per blocked kick
+  dstKickPuntReturnTd: 6  # Kickoff/Punt return TDs by D/ST
+  dstExtraPointReturned: 2
+
+  # Points Allowed (Yahoo tiered scoring)
+  dstPointsAllowed0: 12       # 0 points allowed
+  dstPointsAllowed1_6: 10     # 1–6 points allowed
+  dstPointsAllowed7_13: 7     # 7–13 points allowed
+  dstPointsAllowed14_20: 4    # 14–20 points allowed
+  dstPointsAllowed21_27: 1    # 21–27 points allowed
+  dstPointsAllowed28_34: 0    # 28–34 points allowed
+  dstPointsAllowed35Plus: -4  # 35+ points allowed
+  
+  # Kicker Scoring (distance-based field goals)
+  kFg0_19: 3              # 3 points for field goals 0-19 yards
+  kFg20_29: 3             # 3 points for field goals 20-29 yards
+  kFg30_39: 3             # 3 points for field goals 30-39 yards
+  kFg40_49: 4             # 4 points for field goals 40-49 yards
+  kFg50Plus: 5            # 5 points for field goals 50+ yards
+  kXp: 1                  # 1 point per extra point made
+  kFgMiss: 0              # Penalty for missed field goals (usually 0)
+  kXpMiss: 0              # Penalty for missed extra points (usually 0)

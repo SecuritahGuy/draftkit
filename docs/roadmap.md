@@ -29,20 +29,20 @@ Why: You start a K; your league awards 0–39=3, 40–49=4, 50+=5.
 	•	Else: start with flat FG=3 & XP=1 and gate distance scoring behind a flag --k-distance-buckets for later.
 	•	Accept: K shows up with plausible ranks; distance buckets flip on cleanly when available. ✅
 
-5) Rookie & role-change overrides (fixes Caleb/MHJ undervaluation)
+✅ 5) Rookie & role-change overrides (fixes Caleb/MHJ undervaluation) - SKIPPED FOR NOW
 
 Why: Your blending undervalues rookies or new roles (no prior NFL PPG).
 	•	Add: overrides.csv with columns: player_id,name,pos,tm,points (+ optional note).
 	•	Merge after blending to set points for listed players.
 	•	Accept: Known rookies (e.g., Marvin Harrison Jr.) reflect realistic draft value; export includes source="override".
 
-6) Snake-draft helpers in export
+✅ 6) Snake-draft helpers in export - COMPLETED
 
 Why: 12-team snake benefits from quick round targeting.
 	•	Compute:
 	•	round_est = ceil(overall_rank / 12)
 	•	pick_in_round = ((overall_rank-1) % 12) + 1
-	•	Accept: Fields present and correct for a handful of ranks.
+	•	Accept: Fields present and correct for a handful of ranks. ✅
 
 ✅ 7) Diagnostics & sanity checks (stdout) - COMPLETED
 
@@ -53,10 +53,16 @@ Why: Fast validation under a 60s clock.
 	•	Warnings if replacement > top score or too few eligible players. (Basic validation included)
 	•	Accept: Clear, colorized summary after build; non-fatal warnings. ✅
 
-8) Parquet cache (--cache data_cache/)
+✅ 8) Parquet cache (--cache data_cache/) - COMPLETED
 
 Why: Rebuilds are instant on draft day.
-	•	Accept: Second run with same flags is much faster; cache files per season exist.
+	•	Accept: Second run with same flags is much faster; cache files per season exist. ✅
+
+✅ 8b) Meta.json export - COMPLETED
+
+Why: Frontend needs build metadata.
+	•	Export: public/meta.json with generated_at, target_year, lookback_years, blend, per_game, min_games, schema_version
+	•	Accept: meta.json exists and reflects flags. ✅
 
 ⸻
 

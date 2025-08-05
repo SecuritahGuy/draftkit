@@ -12,15 +12,16 @@ pip install -e . # for development mode
 ```
 
 ```bash
-# Build for 2025 draft prep using blended historical projections
-python -m draftkit --year 2025 --config config/league-settings.example.yml
+# Build for 2025 draft prep using blended historical projections (with caching)
+python -m draftkit --year 2025 --config config/league-settings.example.yml --cache data_cache
 
 # Advanced: Custom blending parameters
 python -m draftkit --year 2025 --config config/league-settings.example.yml \
-  --lookback 3 --blend 0.6,0.3,0.1 --per-game --min-games 8
+  --lookback 3 --blend 0.6,0.3,0.1 --per-game --min-games 8 --cache data_cache
 
 # Output
-# - public/players.json (points, VORP, tiers by position)
+# - public/players.json (points, VORP, tiers, round estimates by position)
+# - public/meta.json (build metadata)
 ```
 
 > **2025 Projections:** Uses blended per-game averages from recent seasons (default: 60% 2024, 30% 2023, 10% 2022) projected to 17 games. This fixes QB VORP issues and provides more stable rankings than single-season data.
@@ -44,11 +45,12 @@ python -m draftkit --year 2025 --config config/league-settings.example.yml \
 - ✅ DST scoring with Yahoo-style point brackets
 - ✅ Kicker scoring with distance-based field goals
 - ✅ Diagnostics & sanity checks
+- ✅ Snake-draft helpers (round estimates, pick-in-round calculations)
+- ✅ Parquet cache for instant rebuilds on draft day
+- ✅ Meta.json export for build metadata
 
 **TODO:**
 - Rookie & role-change overrides for accurate 2025 valuations
-- Snake-draft helpers (round estimates, pick-in-round calculations)
-- Parquet cache for instant rebuilds on draft day
 - Consistency metrics (weekly floors, standard deviation)
 - CSV export for spreadsheet import
 
