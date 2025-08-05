@@ -1,0 +1,53 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+eggs/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.env/
+
+# Local development
+.env
+.coverage
+coverage.xml
+htmlcov/
+logs/*.log
+state.db
+data/
+
+# Generated images and scorecards
+data/scorecards/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Cache directories
+.cache/
+.mypy_cache/
+.ruff_cache/
+*.db
+.data/bot_state.db
+.cache.sqlite
+data/*
+*.jsonl
+*.png 
+*.log 
+
+*.json

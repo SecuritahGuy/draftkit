@@ -1,0 +1,25 @@
+# Yahoo PPR (custom) — aligns with your league
+teams: 12
+roster:
+  QB: 1
+  RB: 2
+  WR: 2
+  TE: 1
+  FLEX: 1
+  K: 1
+  DEF: 1
+flex_positions: [RB, WR, TE]
+
+scoring:
+  passYdsPerPt: 25
+  passTd: 4
+  int: -2
+  pickSixThrown: 0    # not available in open data by default
+  sackTaken: 0        # not available in open data by default
+  rushYdsPerPt: 10
+  rushTd: 6
+  rec: 1
+  recYdsPerPt: 10
+  recTd: 6
+  twoPt: 2
+  fumLost: -2
