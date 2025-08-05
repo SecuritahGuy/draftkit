@@ -3,7 +3,7 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "draftkid"                     # repo name (can be anything)
+name = "draftkit"                     # repo name (can be anything)
 version = "0.1.0"
 description = "nfl_data_py-first fantasy draft builder"
 readme = "README.md"

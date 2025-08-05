@@ -38,6 +38,7 @@ class TestKickerDataLoading:
         
         assert len(result) == 1
         assert result.iloc[0]['player_display_name'] == 'J.Tucker'
+        assert result.iloc[0]['player_id'] == '00-0026858'
         assert result.iloc[0]['team'] == 'BAL'
         assert result.iloc[0]['fg_40_49'] == 1  # 45-yard FG
         assert result.iloc[0]['fg_50_plus'] == 1  # 55-yard FG
@@ -47,10 +48,10 @@ class TestKickerDataLoading:
     def test_load_kicker_rosters_success(self, mock_nfl):
         """Test successful kicker roster loading."""
         mock_rosters = pd.DataFrame([
-            {'player_display_name': 'J.Tucker', 'team': 'BAL', 'position': 'K'},
-            {'player_display_name': 'H.Butker', 'team': 'KC', 'position': 'K'}
+            {'player_name': 'J.Tucker', 'player_id': '00-0026858', 'team': 'BAL', 'position': 'K'},
+            {'player_name': 'H.Butker', 'player_id': '00-0028505', 'team': 'KC', 'position': 'K'}
         ])
-        mock_nfl.import_rosters.return_value = mock_rosters
+        mock_nfl.import_seasonal_rosters.return_value = mock_rosters
         
         result = load_kicker_rosters(2023)
         
@@ -106,12 +107,12 @@ class TestKickerScoring:
         weekly = pd.DataFrame([
             {
                 'season': 2023, 'week': 1, 'player_display_name': 'J.Tucker',
-                'team': 'BAL', 'fg_0_39': 1, 'xp_made': 2
+                'player_id': '00-0026858', 'team': 'BAL', 'fg_0_39': 1, 'xp_made': 2
             }
         ])
         
         rosters = pd.DataFrame([
-            {'player_display_name': 'J.Tucker', 'team': 'BAL', 'position': 'K'}
+            {'player_display_name': 'J.Tucker', 'player_id': '00-0026858', 'team': 'BAL', 'position': 'K'}
         ])
         
         result = apply_kicker_scoring(weekly, rosters, cfg)
@@ -129,12 +130,12 @@ class TestKickerScoring:
         weekly = pd.DataFrame([
             {
                 'season': 2023, 'week': 1, 'player_display_name': 'J.Tucker',
-                'team': 'BAL', 'fg_0_39': 1
+                'player_id': '00-0026858', 'team': 'BAL', 'fg_0_39': 1
             }
         ])
         
         rosters = pd.DataFrame([
-            {'player_display_name': 'J.Tucker', 'team': 'BAL', 'position': 'K'}
+            {'player_display_name': 'J.Tucker', 'player_id': '00-0026858', 'team': 'BAL', 'position': 'K'}
         ])
         
         result = apply_kicker_scoring(weekly, rosters, cfg, bye_weeks={'BAL': 14})
@@ -150,16 +151,16 @@ class TestKickerScoring:
         weekly = pd.DataFrame([
             {
                 'season': 2023, 'week': 1, 'player_display_name': 'J.Tucker',
-                'team': 'BAL', 'fg_0_39': 2, 'xp_made': 3
+                'player_id': '00-0026858', 'team': 'BAL', 'fg_0_39': 2, 'xp_made': 3
             },
             {
                 'season': 2022, 'week': 1, 'player_display_name': 'J.Tucker',
-                'team': 'BAL', 'fg_0_39': 1, 'xp_made': 2
+                'player_id': '00-0026858', 'team': 'BAL', 'fg_0_39': 1, 'xp_made': 2
             }
         ])
         
         rosters = pd.DataFrame([
-            {'player_display_name': 'J.Tucker', 'team': 'BAL', 'position': 'K'}
+            {'player_display_name': 'J.Tucker', 'player_id': '00-0026858', 'team': 'BAL', 'position': 'K'}
         ])
         
         result = apply_kicker_blended_scoring(

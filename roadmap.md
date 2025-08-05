@@ -21,13 +21,13 @@ Why: DEF matters in your lineup and Yahoo uses points-allowed bands + event scor
 	•	Output: Add pos="DST", name=<TEAM>, points, vorp, tier. ✅
 	•	Accept: Top 12 DST look reasonable; points-allowed bands match your rules. ✅
 
-4) Kicker scoring (practical baseline, upgrade when data allows)
+✅ 4) Kicker scoring (practical baseline, upgrade when data allows) - COMPLETED
 
 Why: You start a K; your league awards 0–39=3, 40–49=4, 50+=5.
 	•	Plan:
-	•	If nflverse exposes FG distance buckets: use exact buckets.
+	•	If nflverse exposes FG distance buckets: use exact buckets. ✅
 	•	Else: start with flat FG=3 & XP=1 and gate distance scoring behind a flag --k-distance-buckets for later.
-	•	Accept: K shows up with plausible ranks; distance buckets flip on cleanly when available.
+	•	Accept: K shows up with plausible ranks; distance buckets flip on cleanly when available. ✅
 
 5) Rookie & role-change overrides (fixes Caleb/MHJ undervaluation)
 

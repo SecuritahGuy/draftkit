@@ -1,7 +1,6 @@
 appdirs==1.4.4
 click==8.2.1
 cramjam==2.11.0
--e git+ssh://git@github.com/SecuritahGuy/draftkit.git@78d4c207e38bef3a299e20fdc20cefd4d67a5c1f#egg=draftkid
 fastparquet==2024.11.0
 fsspec==2025.7.0
 iniconfig==2.1.0
