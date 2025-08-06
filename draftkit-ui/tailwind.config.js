@@ -6,6 +6,9 @@ export default {
       fontFamily: {
         'sans': ['Inter', 'system-ui', 'sans-serif'],
       },
+      fontFeatureSettings: {
+        'tabular-nums': '"tnum"',
+      },
     },
   },
   plugins: [],

@@ -1,9 +1,10 @@
 import { useMemo } from 'react'
-import { useStore } from '../store'
+import { useStore } from '../store-simple'
 import type { Player } from '../types'
 
 export function useFilteredPlayers(): Player[] {
-  const { players, filters } = useStore()
+  const players = useStore(s => s.players)
+  const filters = useStore(s => s.filters)
   
   return useMemo(() => {
     return players.filter((player) => {

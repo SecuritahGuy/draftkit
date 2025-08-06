@@ -30,3 +30,12 @@ export type Meta = {
   min_games?: number;
   schema_version?: string;
 }
+
+// Table column meta types
+declare module '@tanstack/react-table' {
+  interface ColumnMeta<TData, TValue> {
+    className?: string;
+    thClass?: string;
+    tdClass?: string;
+  }
+}

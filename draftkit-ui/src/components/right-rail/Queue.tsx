@@ -1,60 +1,63 @@
-import { useStore } from '../../store'
-import { PosPill, TierBadge } from '../ui'
+import { useStore } from '../../store-simple'
 import { Trash2, GripVertical } from 'lucide-react'
 
 export function Queue() {
-  const { players, queue, drafted, actions } = useStore()
+  const players = useStore(s => s.players)
+  const queue = useStore(s => s.queue)
+  const drafted = useStore(s => s.drafted)
+  const actions = useStore(s => s.actions)
   
   const queuedPlayers = queue
     .map(id => players.find(p => p.player_id === id))
     .filter(Boolean)
     .filter(p => !drafted[p!.player_id]) // Remove drafted players from queue view
   
-  const movePlayer = (fromIndex: number, toIndex: number) => {
-    const newQueue = [...queue]
-    const [moved] = newQueue.splice(fromIndex, 1)
-    newQueue.splice(toIndex, 0, moved)
-    // Update queue order - we'll need to add this action to the store
-    // For now, just toggle off and back on in new order
-    actions.toggleQueue(moved)
-    setTimeout(() => actions.toggleQueue(moved), 50)
-  }
-  
   return (
-    <section className="rounded-xl border bg-white p-4 shadow-sm">
-      <h3 className="text-sm font-semibold text-neutral-900 mb-3">Queue</h3>
+    <section className="rounded-2xl border border-neutral-300 bg-white/90 backdrop-blur-sm p-6 shadow-xl">
+      <h3 className="text-lg font-bold text-neutral-900 mb-5 border-b border-neutral-200 pb-3">Queue</h3>
       
       {queuedPlayers.length === 0 ? (
-        <p className="text-xs text-neutral-500 text-center py-4">
+        <p className="text-sm text-neutral-600 text-center py-6 bg-neutral-50 rounded-xl border border-neutral-200">
           Star players to add them to your draft queue
         </p>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {queuedPlayers.map((player, index) => (
             <div
               key={player!.player_id}
-              className="group flex items-center gap-2 p-2 rounded-lg border hover:bg-neutral-50 transition-colors"
+              className="group flex items-center gap-3 p-3 rounded-xl border border-neutral-200 hover:bg-blue-50/50 hover:border-blue-300 transition-all shadow-sm"
             >
               {/* Drag Handle */}
               <div className="text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripVertical className="h-3 w-3" />
+                <GripVertical className="h-4 w-4" />
               </div>
               
               {/* Queue Number */}
-              <div className="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-medium flex items-center justify-center">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700 text-xs font-bold flex items-center justify-center border border-blue-300 shadow-sm">
                 {index + 1}
               </div>
               
               {/* Player Info */}
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-neutral-900 truncate">
+                <div className="text-sm font-semibold text-neutral-900 truncate">
                   {player!.name}
                 </div>
-                <div className="flex items-center gap-1 text-xs">
-                  <PosPill pos={player!.pos} />
-                  <span className="text-neutral-500">•</span>
-                  <span className="text-neutral-500">{player!.tm}</span>
-                  <TierBadge tier={player!.tier} />
+                <div className="flex items-center gap-2 text-xs mt-1">
+                  <span className="rounded-lg bg-gradient-to-r from-neutral-100 to-neutral-200 px-2 py-0.5 text-[10px] font-bold text-neutral-800 uppercase tracking-wide border border-neutral-300 shadow-sm">
+                    {player!.pos}
+                  </span>
+                  <span className="text-neutral-400">•</span>
+                  <span className="text-neutral-600 font-medium">{player!.tm}</span>
+                  <span className={`inline-flex items-center px-2 py-0.5 text-[10px] rounded-full text-white font-bold shadow-sm ${
+                    player!.tier === 1 ? 'bg-gradient-to-r from-purple-500 to-purple-600' :
+                    player!.tier === 2 ? 'bg-gradient-to-r from-blue-500 to-blue-600' :
+                    player!.tier === 3 ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' :
+                    player!.tier === 4 ? 'bg-gradient-to-r from-amber-500 to-amber-600' :
+                    player!.tier === 5 ? 'bg-gradient-to-r from-rose-500 to-rose-600' :
+                    'bg-gradient-to-r from-gray-500 to-gray-600'
+                  }`}>
+                    T{player!.tier}
+                  </span>
                 </div>
               </div>
               

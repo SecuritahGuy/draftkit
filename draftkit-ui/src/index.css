@@ -1,3 +1,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Tokens */
+:root{
+  --card-border: 229 231 235; /* neutral-200 */
+}
+.card{ @apply rounded-2xl border border-neutral-200 bg-white shadow-sm; }
+.num{ font-variant-numeric: tabular-nums; }     /* align numbers */
+.sticky-head{ box-shadow: inset 0 -1px 0 rgba(0,0,0,.06); }  /* table head divider */
+
+/* Density utilities */
+.tr-row > td { padding-top: .625rem; padding-bottom: .625rem; }       /* comfy (py-2.5) */
+[data-density="compact"] .tr-row > td { padding-top: .375rem; padding-bottom: .375rem; } /* compact (py-1.5) */
+
+/* Visual tokens */
+.btn { @apply rounded-md px-3 py-1.5 text-sm border; }
+.btn-primary { @apply bg-neutral-900 text-white hover:bg-neutral-800; }
+.chip { @apply inline-flex items-center rounded-full bg-neutral-200 px-2 py-0.5 text-xs text-neutral-700; }
+.badge-tier-1 { @apply bg-indigo-600 text-white; }
+.badge-tier-2 { @apply bg-blue-600 text-white; }
+.badge-tier-3 { @apply bg-emerald-600 text-white; }
+.badge-tier-4 { @apply bg-amber-600 text-white; }
+.badge-tier-5 { @apply bg-orange-600 text-white; }
+.badge-tier-6 { @apply bg-rose-600 text-white; }
+
+@media print{
+  .sticky, .sticky-head, .backdrop-blur { position: static !important; }
+  .border, .shadow-sm { box-shadow: none !important; }
+  .card { border-color: #000 !important; }
+}

@@ -1,3 +1,3 @@
-export * from './TierBadge'
-export * from './ByeChip'
-export * from './PosPill'
+export { TierBadge } from './TierBadge'
+export { ByeChip } from './ByeChip'  
+export { PosPill } from './PosPill'

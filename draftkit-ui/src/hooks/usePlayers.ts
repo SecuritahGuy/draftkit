@@ -1,19 +1,28 @@
 import { useEffect } from 'react'
-import { useStore } from '../store'
+import { useStore } from '../store-simple'
 
 export function usePlayers() {
-  const { setPlayers, setMeta } = useStore(s => s.actions)
+  const actions = useStore(s => s.actions)
   
   useEffect(() => {
     let cancelled = false
     
+    // Both dev and prod use the base path due to vite.config.ts base setting
+    const basePath = '/draftkit'
+    
     Promise.all([
-      fetch('./players.json').then(r => r.json()),
-      fetch('./meta.json').then(r => r.json()).catch(() => ({}))
+      fetch(`${basePath}/players.json`).then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}: ${r.statusText}`)
+        return r.json()
+      }),
+      fetch(`${basePath}/meta.json`).then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}: ${r.statusText}`)
+        return r.json()
+      }).catch(() => ({}))
     ]).then(([players, meta]) => {
       if (!cancelled) {
-        setPlayers(players)
-        setMeta(meta)
+        actions.setPlayers(players)
+        actions.setMeta(meta)
       }
     }).catch(error => {
       console.error('Failed to load player data:', error)
@@ -22,5 +31,5 @@ export function usePlayers() {
     return () => {
       cancelled = true
     }
-  }, [setPlayers, setMeta])
+  }, [actions.setPlayers, actions.setMeta])
 }
