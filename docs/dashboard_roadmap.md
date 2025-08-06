@@ -454,7 +454,7 @@ export function OverrideBadge({ source }: { source?: string }) {
 If you want, I can also zip a starter draftkid-ui with the boilerplate scaffolding (store, hooks, header, stubbed table/rail) so you can jump straight into columns and styling. Otherwise, this roadmap should give you a crisp, box-checkable path from backend → UI → GH Pages. You’ve got this. 🚀
 # DraftKit / DraftKid – Dashboard Roadmap
 
-**Status:** Phase 1 UI pass completed (sticky toolbar, professional table, tier headers, queue/drafted states, responsive/mobile, keyboard `/` focus, loading/empty states). 712 players load correctly.
+**Status:** Phase 1 Backend & UI core features completed. Major backend scoring enhancements deployed (onesie discount, DST scoring, kicker scoring). UI professional table with tier headers, queue/drafted states, responsive design, keyboard shortcuts. 657 players load correctly.
 
 **League target:** Yahoo 12‑team, 1.0 PPR, single‑QB, WR/WR/RB/RB/TE/FLEX/K/DEF, 6 BN, 2 IR.
 
@@ -476,13 +476,13 @@ If you want, I can also zip a starter draftkid-ui with the boilerplate scaffoldi
 - [x] Lookback blend per‑game → 2025 projection (`--lookback --blend --per-game --min-games`)
 - [x] Bye weeks from 2025 schedules → `bye` per player
 - [x] Replacement/VORP on *projected* points; FLEX allocation; deterministic tiers
-- [ ] **Onesie discount** for single‑QB leagues (and optional TE):
-  - Flag: `--onesie-discount qb=0.90 te=1.00` (applies to *VORP* before overall ranks)
-  - **DoD:** QB1/QB2 land ~late‑2nd/early‑3rd overall; TE unaffected by default
-- [ ] **DST scoring** (Yahoo exact): sacks, INT, FR, TD, safety, block, return TD, **PA bands** (12/10/7/4/1/0/−4)
-  - New: `transforms/scoring_dst.py` → `pos="DEF"`, `player_id="DEF-<TEAM>"`
-- [ ] **K scoring** baseline with distance buckets: `0–19=3, 20–29=3, 30–39=3, 40–49=4, 50+=5, XP=1`
-  - Flag: `--k-distance-buckets` (fallback to flat FG=3 if bucket data missing)
+- [x] **Onesie discount** for single‑QB leagues (and optional TE):
+  - Flag: `--onesie-discount qb=0.90,te=1.00` (applies to *VORP* before overall ranks)
+  - **DoD:** QB1/QB2 land ~late‑2nd/early‑3rd overall; TE unaffected by default ✅
+- [x] **DST scoring** (Yahoo exact): sacks, INT, FR, TD, safety, block, return TD, **PA bands** (12/10/7/4/1/0/−4)
+  - New: `transforms/scoring_dst.py` → `pos="DEF"`, `player_id="DEF-<TEAM>"` ✅
+- [x] **K scoring** baseline with distance buckets: `0–39=3, 40–49=4, 50+=5, XP=1`
+  - New: `transforms/scoring_kicker.py` with distance-based scoring ✅
 - [x] **Overrides** for rookies/role changes: `overrides.csv` → sets `points`, adds `source="override"`
 - [x] Diagnostics (stdout): per‑pos counts, replacement index/baseline, Top‑12 preview
 - [x] Cache pulls to parquet (`--cache data_cache/`) and export `public/meta.json`

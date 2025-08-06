@@ -3,7 +3,19 @@ from typing import List, Dict
 import math
 import numpy as np
 
-def compute_replacement_and_vorp(players: List[Dict], cfg) -> List[Dict]:
+def compute_replacement_and_vorp(players: List[Dict], cfg, onesie_discounts: Dict[str, float] = None) -> List[Dict]:
+    """
+    Compute replacement levels and VORP for all players.
+    
+    Args:
+        players: List of player dictionaries with points
+        cfg: ScoringConfig with roster settings
+        onesie_discounts: Dict of position -> discount factor (e.g., {'QB': 0.90, 'TE': 1.00})
+                         Applied to VORP for positions started in single quantities
+    """
+    if onesie_discounts is None:
+        onesie_discounts = {}
+    
     # Split by position
     by_pos = {}
     for p in players:
@@ -41,15 +53,32 @@ def compute_replacement_and_vorp(players: List[Dict], cfg) -> List[Dict]:
         n = repl_counts.get(pos, 0)
         idx = min(max(n-1, 0), len(plist)-1) if len(plist)>0 else 0
         baseline = plist[idx]['points'] if plist else 0.0
+        
+        # Calculate base VORP
         for p in plist:
             p['repl_pts'] = baseline
-            p['vorp'] = round(p['points'] - baseline, 2)
+            base_vorp = p['points'] - baseline
+            
+            # Apply onesie discount if specified for this position
+            discount_factor = onesie_discounts.get(pos, 1.0)
+            discounted_vorp = base_vorp * discount_factor
+            
+            p['vorp'] = round(discounted_vorp, 2)
             p['pos_rank'] = 1 + plist.index(p)
-    # Overall rank
+    # Overall rank by VORP (after onesie discounts)
     allp = [p for plist in by_pos.values() for p in plist]
-    allp.sort(key=lambda x: x['points'], reverse=True)
+    allp.sort(key=lambda x: x['vorp'], reverse=True)
     for i,p in enumerate(allp, start=1):
         p['overall_rank'] = i
+    # Add bye weeks if provided and ensure all values are JSON serializable
+    for p in allp:
+        # Convert numpy types to Python native types
+        for key, value in p.items():
+            if isinstance(value, np.integer):
+                p[key] = int(value)
+            elif isinstance(value, np.floating):
+                p[key] = float(value)
+                
     return allp
 
 def add_tiers_kmeans(players: List[Dict], k: int = 6) -> List[Dict]:

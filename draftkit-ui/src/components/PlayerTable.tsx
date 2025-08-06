@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react'
+import { Fragment, useState } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
@@ -63,10 +63,10 @@ export function PlayerTable({ players }: { players: Player[] }) {
   let prevTier: number | null = null;
 
   return (
-    <div className="card overflow-hidden">
-      <div className="overflow-x-auto">
+    <div className="card overflow-hidden max-h-[70vh]">
+      <div className="overflow-x-auto overflow-y-auto h-full">
         <table className="w-full min-w-[760px] border-separate border-spacing-0">
-          <thead className="sticky top-[152px] z-20 bg-white sticky-head">
+          <thead className="sticky top-0 z-20 bg-white sticky-head">
             {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
@@ -108,7 +108,7 @@ export function PlayerTable({ players }: { players: Player[] }) {
               return (
                 <Fragment key={`frag-${row.id}`}>
                   {showTierHeader && (
-                    <tr className="sticky top-[152px] z-10">
+                    <tr className="sticky top-0 z-10">
                       <td colSpan={columns.length}
                           className="bg-neutral-100/80 backdrop-blur px-3 py-1.5 text-xs font-semibold text-neutral-600">
                         Tier {curTier}

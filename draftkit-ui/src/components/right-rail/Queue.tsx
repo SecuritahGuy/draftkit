@@ -1,5 +1,115 @@
 import { useStore } from '../../store-simple'
 import { Trash2, GripVertical } from 'lucide-react'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import {
+  useSortable,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+
+interface SortableItemProps {
+  id: string
+  player: any
+  index: number
+  onRemove: (id: string) => void
+}
+
+function SortableItem({ id, player, index, onRemove }: SortableItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition: isDragging ? 'none' : transition,
+    zIndex: isDragging ? 1000 : 'auto',
+    opacity: isDragging ? 0.8 : 1
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group flex items-center gap-3 p-3 rounded-xl border border-neutral-200 hover:bg-blue-50/50 hover:border-blue-300 transition-all shadow-sm ${
+        isDragging ? 'shadow-2xl scale-105 bg-blue-50 border-blue-400' : ''
+      }`}
+    >
+      {/* Drag Handle */}
+      <div 
+        className="text-neutral-400 group-hover:text-neutral-600 transition-all cursor-grab active:cursor-grabbing flex-shrink-0"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="h-4 w-4" />
+      </div>
+      
+      {/* Queue Number */}
+      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700 text-xs font-bold flex items-center justify-center border border-blue-300 shadow-sm">
+        {index + 1}
+      </div>
+      
+      {/* Player Info */}
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-semibold text-neutral-900 truncate">
+          {player.name}
+        </div>
+        <div className="flex items-center gap-2 text-xs mt-1">
+          <span className="rounded-lg bg-gradient-to-r from-neutral-100 to-neutral-200 px-2 py-0.5 text-[10px] font-bold text-neutral-800 uppercase tracking-wide border border-neutral-300 shadow-sm">
+            {player.pos}
+          </span>
+          <span className="text-neutral-400">•</span>
+          <span className="text-neutral-600 font-medium">{player.tm}</span>
+          <span className={`inline-flex items-center px-2 py-0.5 text-[10px] rounded-full text-white font-bold shadow-sm ${
+            player.tier === 1 ? 'bg-gradient-to-r from-purple-500 to-purple-600' :
+            player.tier === 2 ? 'bg-gradient-to-r from-blue-500 to-blue-600' :
+            player.tier === 3 ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' :
+            player.tier === 4 ? 'bg-gradient-to-r from-amber-500 to-amber-600' :
+            player.tier === 5 ? 'bg-gradient-to-r from-rose-500 to-rose-600' :
+            'bg-gradient-to-r from-gray-500 to-gray-600'
+          }`}>
+            T{player.tier}
+          </span>
+        </div>
+      </div>
+      
+      {/* VORP */}
+      <div className="text-xs font-mono text-right">
+        <div className={`${
+          player.vorp > 0 ? 'text-emerald-600' : 'text-rose-600'
+        }`}>
+          {player.vorp > 0 ? '+' : ''}{player.vorp.toFixed(1)}
+        </div>
+        <div className="text-neutral-500">#{player.overall_rank}</div>
+      </div>
+      
+      {/* Remove Button */}
+      <button
+        onClick={() => onRemove(id)}
+        className="opacity-0 group-hover:opacity-100 p-1 text-neutral-400 hover:text-rose-600 transition-all"
+        title="Remove from queue"
+      >
+        <Trash2 className="h-3 w-3" />
+      </button>
+    </div>
+  )
+}
 
 export function Queue() {
   const players = useStore(s => s.players)
@@ -7,10 +117,37 @@ export function Queue() {
   const drafted = useStore(s => s.drafted)
   const actions = useStore(s => s.actions)
   
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+  
   const queuedPlayers = queue
     .map(id => players.find(p => p.player_id === id))
     .filter(Boolean)
     .filter(p => !drafted[p!.player_id]) // Remove drafted players from queue view
+  
+  // Get the current queue IDs for sortable context (only non-drafted players)
+  const sortableIds = queuedPlayers.map(p => p!.player_id)
+  
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    
+    if (over && active.id !== over.id) {
+      const oldIndex = sortableIds.indexOf(active.id as string)
+      const newIndex = sortableIds.indexOf(over.id as string)
+      
+      if (oldIndex !== -1 && newIndex !== -1) {
+        actions.reorderQueue(oldIndex, newIndex)
+      }
+    }
+  }
   
   return (
     <section className="rounded-2xl border border-neutral-300 bg-white/90 backdrop-blur-sm p-6 shadow-xl">
@@ -21,67 +158,25 @@ export function Queue() {
           Star players to add them to your draft queue
         </p>
       ) : (
-        <div className="space-y-3">
-          {queuedPlayers.map((player, index) => (
-            <div
-              key={player!.player_id}
-              className="group flex items-center gap-3 p-3 rounded-xl border border-neutral-200 hover:bg-blue-50/50 hover:border-blue-300 transition-all shadow-sm"
-            >
-              {/* Drag Handle */}
-              <div className="text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripVertical className="h-4 w-4" />
-              </div>
-              
-              {/* Queue Number */}
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700 text-xs font-bold flex items-center justify-center border border-blue-300 shadow-sm">
-                {index + 1}
-              </div>
-              
-              {/* Player Info */}
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-neutral-900 truncate">
-                  {player!.name}
-                </div>
-                <div className="flex items-center gap-2 text-xs mt-1">
-                  <span className="rounded-lg bg-gradient-to-r from-neutral-100 to-neutral-200 px-2 py-0.5 text-[10px] font-bold text-neutral-800 uppercase tracking-wide border border-neutral-300 shadow-sm">
-                    {player!.pos}
-                  </span>
-                  <span className="text-neutral-400">•</span>
-                  <span className="text-neutral-600 font-medium">{player!.tm}</span>
-                  <span className={`inline-flex items-center px-2 py-0.5 text-[10px] rounded-full text-white font-bold shadow-sm ${
-                    player!.tier === 1 ? 'bg-gradient-to-r from-purple-500 to-purple-600' :
-                    player!.tier === 2 ? 'bg-gradient-to-r from-blue-500 to-blue-600' :
-                    player!.tier === 3 ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' :
-                    player!.tier === 4 ? 'bg-gradient-to-r from-amber-500 to-amber-600' :
-                    player!.tier === 5 ? 'bg-gradient-to-r from-rose-500 to-rose-600' :
-                    'bg-gradient-to-r from-gray-500 to-gray-600'
-                  }`}>
-                    T{player!.tier}
-                  </span>
-                </div>
-              </div>
-              
-              {/* VORP */}
-              <div className="text-xs font-mono text-right">
-                <div className={`${
-                  player!.vorp > 0 ? 'text-emerald-600' : 'text-rose-600'
-                }`}>
-                  {player!.vorp > 0 ? '+' : ''}{player!.vorp.toFixed(1)}
-                </div>
-                <div className="text-neutral-500">#{player!.overall_rank}</div>
-              </div>
-              
-              {/* Remove Button */}
-              <button
-                onClick={() => actions.toggleQueue(player!.player_id)}
-                className="opacity-0 group-hover:opacity-100 p-1 text-neutral-400 hover:text-rose-600 transition-all"
-                title="Remove from queue"
-              >
-                <Trash2 className="h-3 w-3" />
-              </button>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
+            <div className="space-y-3">
+              {queuedPlayers.map((player, index) => (
+                <SortableItem
+                  key={player!.player_id}
+                  id={player!.player_id}
+                  player={player!}
+                  index={index}
+                  onRemove={actions.toggleQueue}
+                />
+              ))}
             </div>
-          ))}
-        </div>
+          </SortableContext>
+        </DndContext>
       )}
       
       {/* Queue Actions */}

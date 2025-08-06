@@ -1,11 +1,10 @@
-import { useState } from 'react'
 import { useStore } from '../../store-simple'
 import { nextTwoPicks, getPicksForSlot } from '../../lib/snake'
 
 export function PickTracker() {
   const mySlot = useStore(s => s.mySlot)
+  const currentPick = useStore(s => s.currentPick)
   const actions = useStore(s => s.actions)
-  const [currentPick, setCurrentPick] = useState(1)
   
   const handleSlotChange = (slot: number) => {
     actions.setMySlot(slot)
@@ -41,7 +40,7 @@ export function PickTracker() {
           min="1"
           max="192"
           value={currentPick}
-          onChange={(e) => setCurrentPick(parseInt(e.target.value) || 1)}
+          onChange={(e) => actions.setCurrentPick(parseInt(e.target.value) || 1)}
           className="w-full px-4 py-3 border border-neutral-300 rounded-xl text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium transition-all"
         />
       </div>

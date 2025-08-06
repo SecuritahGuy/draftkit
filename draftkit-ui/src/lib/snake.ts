@@ -21,3 +21,17 @@ export function getPicksForSlot(slot: number, teams = 12, totalRounds = 16) {
   }
   return picks
 }
+
+export function isYourTurn(slot: number, currentPick: number, teams = 12): boolean {
+  const round = roundOf(currentPick, teams)
+  const isOdd = round % 2 === 1
+  const expectedSlot = isOdd 
+    ? pickInRound(currentPick, teams)
+    : teams - pickInRound(currentPick, teams) + 1
+  return slot === expectedSlot
+}
+
+export function picksUntilYourTurn(slot: number, currentPick: number, teams = 12): number {
+  const [nextPick] = nextTwoPicks(slot, currentPick, teams)
+  return Math.max(0, nextPick - currentPick)
+}

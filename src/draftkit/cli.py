@@ -9,9 +9,9 @@ from .connectors.nflverse import load_weekly, load_rosters
 from .connectors.schedule import load_bye_weeks, get_2025_bye_weeks
 from .connectors.dst import load_dst_weekly, load_dst_rosters
 from .connectors.kicker import load_kicker_weekly, load_kicker_rosters
-from .transforms.scoring import (ScoringConfig, apply_scoring, apply_blended_scoring, 
-                                 apply_dst_scoring, apply_dst_blended_scoring,
-                                 apply_kicker_scoring, apply_kicker_blended_scoring)
+from .transforms.scoring import (apply_scoring, apply_blended_scoring, ScoringConfig)
+from .transforms.scoring_dst import apply_dst_scoring, apply_dst_blended_scoring
+from .transforms.scoring_kicker import apply_kicker_scoring, apply_kicker_blended_scoring
 from .transforms.tiers import compute_replacement_and_vorp, add_tiers_kmeans
 
 app = typer.Typer(help="DraftKit builder (nfl_data_py-first)")
@@ -208,6 +208,7 @@ def build(year: int = typer.Option(..., "--year", "-y"),
           blend: str = typer.Option("0.6,0.3,0.1", "--blend", help="Comma-separated weights for blending years (most recent first)"),
           per_game: bool = typer.Option(True, "--per-game/--total", help="Use per-game projections multiplied by 17 games"),
           min_games: int = typer.Option(8, "--min-games", help="Minimum games played in a season to include in projections"),
+          onesie_discount: str = typer.Option("qb=0.90,te=1.00", "--onesie-discount", help="Position discount factors for single-starter positions (e.g., 'qb=0.90,te=1.00')"),
           cache: Path = typer.Option(None, "--cache", help="Cache directory for parquet files (speeds up rebuilds)")):
     """Build players.json for the given season/year."""
     outdir.mkdir(parents=True, exist_ok=True)
@@ -221,6 +222,18 @@ def build(year: int = typer.Option(..., "--year", "-y"),
     # Normalize weights to sum to 1.0
     total_weight = sum(blend_weights)
     blend_weights = [w / total_weight for w in blend_weights]
+
+    # Parse onesie discount
+    onesie_discounts = {}
+    if onesie_discount:
+        for pair in onesie_discount.split(','):
+            if '=' in pair:
+                pos_str, discount_str = pair.split('=', 1)
+                pos = pos_str.strip().upper()
+                discount = float(discount_str.strip())
+                onesie_discounts[pos] = discount
+        if onesie_discounts:
+            print(f"[bold]Onesie discounts: {onesie_discounts}[/]")
 
     # Determine which years to pull data from
     if year == 2025:
@@ -280,7 +293,7 @@ def build(year: int = typer.Option(..., "--year", "-y"),
 
     # 4) Replacement + VORP + tiers
     print("[bold]Computing replacement, VORP, tiers...[/]")
-    all_players = compute_replacement_and_vorp(all_players, cfg)
+    all_players = compute_replacement_and_vorp(all_players, cfg, onesie_discounts)
     all_players = add_tiers_kmeans(all_players)
 
     # 5) Add snake-draft helpers

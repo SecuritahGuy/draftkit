@@ -30,6 +30,18 @@ export function Roster() {
     return { ...slot, filled, needed }
   })
   
+  // Calculate bye week collisions
+  const byeWeekCounts = draftedPlayers.reduce((acc, player) => {
+    if (player.bye) {
+      acc[player.bye] = (acc[player.bye] || 0) + 1
+    }
+    return acc
+  }, {} as Record<number, number>)
+  
+  const byeCollisions = Object.entries(byeWeekCounts)
+    .filter(([, count]) => count >= 3)
+    .map(([bye, count]) => ({ bye: parseInt(bye), count }))
+  
   return (
     <section className="rounded-xl border bg-white p-4 shadow-sm">
       <h3 className="text-sm font-semibold text-neutral-900 mb-3">Your roster</h3>
@@ -81,6 +93,20 @@ export function Roster() {
           )}
         </div>
       </div>
+      
+      {/* Bye Week Collisions */}
+      {byeCollisions.length > 0 && (
+        <div className="border-t pt-3 mt-3">
+          <h4 className="text-xs font-medium text-rose-700 mb-2">⚠️ Bye week collisions</h4>
+          <div className="flex flex-wrap gap-1">
+            {byeCollisions.map(({ bye, count }) => (
+              <span key={bye} className="inline-flex items-center gap-1 rounded bg-rose-100 px-2 py-0.5 text-xs text-rose-800">
+                Week {bye}: {count} players
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
       
       {/* Bench */}
       {draftedPlayers.length > 9 && (
