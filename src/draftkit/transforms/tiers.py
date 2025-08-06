@@ -27,6 +27,8 @@ def compute_replacement_and_vorp(players: List[Dict], cfg, onesie_discounts: Dic
         'RB': cfg.roster.get('RB', 2) * teams,
         'WR': cfg.roster.get('WR', 2) * teams,
         'TE': cfg.roster.get('TE', 1) * teams,
+        'K': cfg.roster.get('K', 1) * teams,
+        'DST': cfg.roster.get('DEF', 1) * teams,  # DST position mapped from DEF config
     }
     # Allocate FLEX across RB/WR/TE by best available
     flex_slots = cfg.roster.get('FLEX', 0) * teams
@@ -46,6 +48,8 @@ def compute_replacement_and_vorp(players: List[Dict], cfg, onesie_discounts: Dic
         'RB': base_counts['RB'] + flex_take['RB'],
         'WR': base_counts['WR'] + flex_take['WR'],
         'TE': base_counts['TE'] + flex_take['TE'],
+        'K': base_counts['K'],
+        'DST': base_counts['DST'],
     }
     # Compute replacement baselines and VORP
     for pos, plist in by_pos.items():

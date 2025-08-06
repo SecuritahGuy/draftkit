@@ -1,17 +1,13 @@
 {
-  "generated_at": "2025-08-05T18:35:33.073910Z",
+  "generated_at": "2025-08-06T16:11:55.774748Z",
   "target_year": 2025,
   "schema_version": "0.1.0",
   "lookback_years": [
-    2024,
-    2023,
-    2022
+    2024
   ],
   "blend": [
-    0.6,
-    0.3,
-    0.1
+    1.0
   ],
   "per_game": true,
-  "min_games": 8
+  "min_games": 1
 }

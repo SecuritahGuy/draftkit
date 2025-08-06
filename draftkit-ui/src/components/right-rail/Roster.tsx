@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useStore } from '../../store-simple'
 import { PosPill } from '../ui/PosPill'
 
@@ -13,6 +15,7 @@ const starterSlots = [
 export function Roster() {
   const players = useStore(s => s.players)
   const drafted = useStore(s => s.drafted)
+  const [expandedCollisions, setExpandedCollisions] = useState<Set<number>>(new Set())
   
   const draftedPlayers = players.filter(p => drafted[p.player_id])
   
@@ -30,17 +33,19 @@ export function Roster() {
     return { ...slot, filled, needed }
   })
   
-  // Calculate bye week collisions
-  const byeWeekCounts = draftedPlayers.reduce((acc, player) => {
+  // Calculate bye week collisions with player details
+  const byeWeekGroups = draftedPlayers.reduce((acc, player) => {
     if (player.bye) {
-      acc[player.bye] = (acc[player.bye] || 0) + 1
+      if (!acc[player.bye]) acc[player.bye] = []
+      acc[player.bye].push(player)
     }
     return acc
-  }, {} as Record<number, number>)
+  }, {} as Record<number, typeof draftedPlayers>)
   
-  const byeCollisions = Object.entries(byeWeekCounts)
-    .filter(([, count]) => count >= 3)
-    .map(([bye, count]) => ({ bye: parseInt(bye), count }))
+  const byeCollisions = Object.entries(byeWeekGroups)
+    .filter(([, players]) => players.length >= 3)
+    .map(([bye, players]) => ({ bye: parseInt(bye), players }))
+    .sort((a, b) => a.bye - b.bye)
   
   return (
     <section className="rounded-xl border bg-white p-4 shadow-sm">
@@ -98,12 +103,50 @@ export function Roster() {
       {byeCollisions.length > 0 && (
         <div className="border-t pt-3 mt-3">
           <h4 className="text-xs font-medium text-rose-700 mb-2">⚠️ Bye week collisions</h4>
-          <div className="flex flex-wrap gap-1">
-            {byeCollisions.map(({ bye, count }) => (
-              <span key={bye} className="inline-flex items-center gap-1 rounded bg-rose-100 px-2 py-0.5 text-xs text-rose-800">
-                Week {bye}: {count} players
-              </span>
-            ))}
+          <div className="space-y-2">
+            {byeCollisions.map(({ bye, players }) => {
+              const isExpanded = expandedCollisions.has(bye)
+              return (
+                <div key={bye} className="rounded bg-rose-50 border border-rose-200">
+                  <button
+                    onClick={() => {
+                      const newExpanded = new Set(expandedCollisions)
+                      if (isExpanded) {
+                        newExpanded.delete(bye)
+                      } else {
+                        newExpanded.add(bye)
+                      }
+                      setExpandedCollisions(newExpanded)
+                    }}
+                    className="w-full flex items-center justify-between px-3 py-2 text-xs text-rose-800 hover:bg-rose-100 transition-colors"
+                  >
+                    <span>Week {bye}: {players.length} players</span>
+                    {isExpanded ? (
+                      <ChevronDown className="h-3 w-3" />
+                    ) : (
+                      <ChevronRight className="h-3 w-3" />
+                    )}
+                  </button>
+                  
+                  {isExpanded && (
+                    <div className="px-3 pb-2 space-y-1">
+                      {players
+                        .sort((a, b) => a.pos.localeCompare(b.pos))
+                        .map(player => (
+                          <div key={player.player_id} className="flex items-center justify-between text-xs text-rose-700 bg-white/60 rounded px-2 py-1">
+                            <span className="truncate font-medium">{player.name}</span>
+                            <div className="flex items-center gap-1">
+                              <PosPill pos={player.pos} />
+                              <span className="text-rose-500 text-xs">#{player.overall_rank}</span>
+                            </div>
+                          </div>
+                        ))
+                      }
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
       )}

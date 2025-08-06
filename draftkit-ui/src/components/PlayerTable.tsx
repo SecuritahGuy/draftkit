@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { useState } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
@@ -13,21 +13,25 @@ import { useStore } from '../store-simple'
 import { columns } from './columns'
 
 // Row classnames helper
-function rowClassnames(row: Row<Player>, queueIds: string[], draftedIds: Record<string, boolean>) {
+function rowClassnames(row: Row<Player>, queueIds: string[]) {
   const queued = queueIds.includes(row.original.player_id);
-  const drafted = draftedIds[row.original.player_id];
+  // Since drafted players are filtered out, we don't need drafted styling here
   return [
     "tr-row odd:bg-white even:bg-neutral-50 hover:bg-neutral-100/70 transition-colors",
-    queued && "border-l-4 border-indigo-600 bg-indigo-50/30",
-    drafted && "opacity-50 pointer-events-none"
+    queued && "border-l-4 border-indigo-600 bg-indigo-50/30"
   ].filter(Boolean).join(" ");
 }
 
 export function PlayerTable({ players }: { players: Player[] }) {
   const queue = useStore(s => s.queue)
-  const drafted = useStore(s => s.drafted)
   const dense = useStore(s => s.dense)
+  const actions = useStore(s => s.actions)
   const [sorting, setSorting] = useState<SortingState>([])
+
+  const handlePlayerClick = (player: Player) => {
+    // Toggle drafted status
+    actions.markDrafted(player.player_id)
+  }
 
   const table = useReactTable({
     data: players,
@@ -60,19 +64,35 @@ export function PlayerTable({ players }: { players: Player[] }) {
     );
   }
 
-  let prevTier: number | null = null;
-
   return (
-    <div className="card overflow-hidden max-h-[70vh]">
-      <div className="overflow-x-auto overflow-y-auto h-full">
-        <table className="w-full min-w-[760px] border-separate border-spacing-0">
-          <thead className="sticky top-0 z-20 bg-white sticky-head">
-            {table.getHeaderGroups().map(headerGroup => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map(header => (
+    <div className="scroll-area overflow-auto">
+      <table className="w-full min-w-[760px] border-separate border-spacing-0 table-sticky">
+        <thead>
+          {table.getHeaderGroups().map(headerGroup => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map((header, i) => {
+                const isFirst = i === 0;
+                const isLast = i === headerGroup.headers.length - 1;
+                const sticky = isFirst
+                  ? 'sticky left-0 z-10 bg-white'
+                  : isLast
+                  ? 'sticky right-0 z-10 bg-white'
+                  : '';
+
+                const sortState = header.column.getIsSorted();
+                const ariaSort =
+                  sortState === 'asc'
+                    ? 'ascending'
+                    : sortState === 'desc'
+                    ? 'descending'
+                    : 'none';
+
+                return (
                   <th
                     key={header.id}
-                    className={`px-3 py-3 text-left text-xs font-bold uppercase tracking-wider text-neutral-700 cursor-pointer hover:bg-neutral-50 transition-colors ${
+                    scope="col"
+                    aria-sort={ariaSort as any}
+                    className={`px-3 py-3 text-left text-xs font-bold uppercase tracking-wider text-neutral-700 cursor-pointer hover:bg-neutral-50 transition-colors ${sticky} ${
                       header.column.columnDef.meta?.className || ''
                     } ${
                       header.column.columnDef.meta?.thClass || ''
@@ -80,13 +100,17 @@ export function PlayerTable({ players }: { players: Player[] }) {
                     style={{ width: header.getSize() }}
                     onClick={header.column.getToggleSortingHandler()}
                   >
-                    <div className={`flex items-center gap-2 ${
-                      header.column.columnDef.meta?.className?.includes('text-right') ? 'justify-end' : ''
-                    }`}>
+                    <div
+                      className={`flex items-center gap-2 ${
+                        header.column.columnDef.meta?.className?.includes('text-right')
+                          ? 'justify-end'
+                          : ''
+                      }`}
+                    >
                       {flexRender(header.column.columnDef.header, header.getContext())}
-                      {header.column.getIsSorted() && (
+                      {sortState && (
                         <span className="text-indigo-600">
-                          {header.column.getIsSorted() === 'asc' ? (
+                          {sortState === 'asc' ? (
                             <ChevronUp className="h-4 w-4" />
                           ) : (
                             <ChevronDown className="h-4 w-4" />
@@ -95,44 +119,48 @@ export function PlayerTable({ players }: { players: Player[] }) {
                       )}
                     </div>
                   </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody data-density={dense ? 'compact' : undefined}>
-            {rows.map(row => {
-              const curTier = row.original.tier;
-              const showTierHeader = curTier !== prevTier;
-              prevTier = curTier;
-
-              return (
-                <Fragment key={`frag-${row.id}`}>
-                  {showTierHeader && (
-                    <tr className="sticky top-0 z-10">
-                      <td colSpan={columns.length}
-                          className="bg-neutral-100/80 backdrop-blur px-3 py-1.5 text-xs font-semibold text-neutral-600">
-                        Tier {curTier}
-                      </td>
-                    </tr>
-                  )}
-                  <tr className={rowClassnames(row, queue, drafted)}>
-                    {row.getVisibleCells().map(cell => (
-                      <td 
-                        key={cell.id} 
-                        className={`px-3 py-2.5 align-middle ${
-                          cell.column.columnDef.meta?.tdClass || ''
-                        }`}
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
-                    ))}
-                  </tr>
-                </Fragment>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                );
+              })}
+            </tr>
+          ))}
+        </thead>
+        <tbody data-density={dense ? 'compact' : undefined}>
+          {rows.map(row => (
+            <tr
+              key={row.id}
+              className={rowClassnames(row, queue)}
+              onClick={(e) => {
+                const el = e.target as HTMLElement;
+                if (el.closest('button, a, [data-no-row-click]')) return; // let inner controls handle their own clicks
+                handlePlayerClick(row.original);
+              }}
+              style={{ cursor: 'pointer' }}
+            >
+              {row.getVisibleCells().map((cell, i) => {
+                const isFirst = i === 0;
+                const isLast = i === row.getVisibleCells().length - 1;
+                const sticky = isFirst
+                  ? 'sticky left-0 z-10 bg-white'
+                  : isLast
+                  ? 'sticky right-0 z-10 bg-white'
+                  : '';
+                const val = cell.getValue() as any;
+                const isNumeric = typeof val === 'number';
+                return (
+                  <td
+                    key={cell.id}
+                    className={`px-3 py-2.5 align-middle ${isNumeric ? 'text-right num' : ''} ${sticky} ${
+                      cell.column.columnDef.meta?.tdClass || ''
+                    }`}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
